@@ -1,6 +1,6 @@
 # ARPS Ultra Scalper
-**Originally created: July 24, 2020**
-*(Note: This script was created in 2020 but is being shared on GitHub on 2025-04-25)*
+**Originally created: April 25, 2025**
+*(Note: This script was created in 2025 but is being shared on GitHub on 2025-04-25)*
 
 ---
 
