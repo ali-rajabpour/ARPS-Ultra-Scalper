@@ -1,0 +1,257 @@
+//@version=4
+//ARPS Ultra Scalper
+study("ARPS Ultra Scalper", precision=2, overlay=true)
+length = input(title="Length", type=input.integer, defval=20)
+src = input(title="Source", type=input.source, defval=close)
+// *****************************************
+//RSI Cross, Stochastic, and WMA Cross
+line1 = rsi(close, 34)
+line2 = wma(line1, 68)
+line3 = wma(close, 50)
+line4 = wma(close, 200)
+periodK = input(14, title="K", minval=1)
+periodD = input(3, title="D", minval=1)
+smoothK = input(3, title="Smooth", minval=1)
+k = wma(stoch(close, high, low, periodK), smoothK)
+d = wma(k, periodD)
+// *****************************************
+// DOJI and Cloud Patterns
+//Doji
+DojiSize = input(0.03, minval=0.01, title="Doji size")
+doji = (abs(open - close) <= (high - low) * DojiSize and (abs((high + low)*0.5 - (open + close)*0.5)/(high - low)) <= 0.4)
+flydragondoji = (abs(open - close) <= (high - low) * DojiSize and (((high + low)*0.5 - (open + close)*0.5)/(high - low)) <= -0.4)
+gravestonedoji = (abs(open - close) <= (high - low) * DojiSize and (((high + low)*0.5 - (open + close)*0.5)/(high - low)) >= 0.4)
+plotshape(doji, title = "Doji", text = 'Doji')
+plotshape(flydragondoji, title = "FlyDragon Doji", text = 'Flydragon')
+plotshape(gravestonedoji, title = "Gravestone Doji", text = 'Gravestone')
+
+//Evening Star
+estar=(close[2] > open[2] and close < open and abs(close[2] - open[2]) > 4*abs(close[1] - open[1]) and abs(open - close) > 4*abs(close[1] - open[1]))
+plotshape(estar, title= "Evening Star", color=color.red, style=shape.arrowdown, text="Evening\nStar")
+
+//Morning Star
+mstar=(close[2] < open[2] and close > open and abs(close[2] - open[2]) > 4*abs(close[1] - open[1]) and abs(open - close) > 4*abs(close[1] - open[1]))
+plotshape(mstar,  title= "Morning Star", location=location.belowbar, color=color.lime, style=shape.arrowup, text="Morning\nStar")
+
+//Shooting Star
+sstar=(high - max(open, close) >= abs(open - close) * 3 and min(close, open) - low <= abs(open - close)*0.5)
+plotshape(sstar, title= "Shooting Star", color=color.red, style=shape.arrowdown, text="Shooting\nStar")
+
+//Hammer
+hammer=(abs(low - min(open, close)) >= abs(open - close) * 3 and high - max(close, open) <= abs(open - close)*0.5)
+plotshape(hammer, title= "Hammer", location=location.belowbar, style=shape.diamond, text="H")
+
+//Bearish Harami
+bearH=(close[2] > open[2] and open < close[2] and open > open[2] and close < close[2] and close > open[2] and high < close[2] )
+plotshape(bearH, title= "Bearish Harami",  color=color.red, style=shape.arrowdown, text="Bearish\nHarami")
+
+//Bullish Harami
+bullH=(close[2] < open[2] and open < open[2] and open > close[2] and close < open[2] and close > close[2] and low > close[2] )
+plotshape(bullH,  title= "Bullish Harami", location=location.belowbar, color=color.lime, style=shape.arrowup, text="Bullish\nHarami")
+
+//Bearish Engulfing
+bearE=(close[2] > open[2] and close < open and close[2] > close and close[2] < open and open[2] > close and open[2] < open and high[2] < open )
+plotshape(bearE,  title= "Bearish Engulfing", color=color.red, style=shape.arrowdown, text="Bearish\nEngulfing")
+
+//Bullish Engulfing
+bullE=(close[2] < open[2] and close > open and close[2] < close and close[2] > open and open[2] < close and open[2] > open and low[2] > open )
+plotshape(bullE, title= "Bullish Engulfing", location=location.belowbar, color=color.lime, style=shape.arrowup, text="Bullish\nEngulfling")
+
+//Dark Cloud Cover
+dcc=((close[2]>open[2])and(((close[2]+open[2])/2)>close)and(open>close)and(open>close[2])and(close>open[2])and((open-close)/(.001+(high-low))>0.6))
+plotshape(dcc, title= "Dark Cloud Cover", color=color.red, style=shape.arrowdown, text="Dark\nCloudCover")
+
+// *****************************************
+//Previous Candle Patterns
+
+//Previous Evening Star
+estarP=(close[3] > open[3] and close[1] < open[1] and abs(close[3] - open[3]) > 4*abs(close[2] - open[2]) and abs(open[1] - close[1]) > 4*abs(close[2] - open[2]))
+
+//Previous Morning Star
+mstarP=(close[3] < open[3] and close[1] > open[1] and abs(close[3] - open[3]) > 4*abs(close[2] - open[2]) and abs(open[1] - close[1]) > 4*abs(close[2] - open[2]))
+
+//Previous Shooting Star
+sstarP=(high - max(open[1], close[1]) >= abs(open[1] - close[1]) * 3 and min(close[1], open[1]) - low <= abs(open[1] - close[1])*0.5)
+
+//Previous Hammer
+hammerP=(abs(low - min(open[1], close[1])) >= abs(open[1] - close[1]) * 3 and high - max(close[1], open[1]) <= abs(open[1] - close[1])*0.5)
+
+//Previous Bearish Harami
+bearHP=(close[3] > open[3] and open[1] < close[3] and open[1] > open[3] and close[1] < close[3] and close[1] > open[3] and high < close[3] )
+
+//Previous Bullish Harami
+bullHP=(close[3] < open[3] and open[1] < open[3] and open[1] > close[3] and close[1] < open[3] and close[1] > close[3] and low[1] > close[3] )
+
+//Previous Bearish Engulfing
+bearEP=(close[3] > open[3] and close[1] < open[1] and close[3] > close[1] and close[3] < open[1] and open[3] > close[1] and open[3] < open[1] and high[3] < open[1])
+
+//Previous Bullish Engulfing
+bullEP=(close[3] < open[3] and close[1] > open[1] and close[3] < close[1] and close[3] > open[1] and open[3] < close[1] and open[3] > open[1] and low[3] > open[1])
+
+//Previous Dark Cloud Cover
+dccP=((close[3]>open[3])and(((close[3]+open[3])/2)>close[1])and(open[1]>close[1])and(open[1]>close[3])and(close[1]>open[3])and((open[1]-close[1])/(.001+(high[1]-low[1]))>0.6))
+
+
+// *****************************************
+//--------------------  INPUT ICHIMOKU ---------------------------------------------//
+ichi = input(false, title="Ichimoku ? ")
+ichi2 = input(true, title="Ichimoku adjust and double ?")
+tenkanPeriods = input(9, minval=1, title="Tenkan-sen Periods")
+kijunPeriods = input(26, minval=1, title="Kijun-sen Periods")
+SenkouSpanBPeriods = input(52, minval=1, title="Senkou Span B Periods")
+displacement = input(26, minval=1, title="Chikou Periods")
+kyanPeriods = input(65, minval=1, title="Kyan-sen Periods")
+cr1 = input(false, title="Show Crosses up/down Tenkan-Sen and Kinjun-Sen ?")
+cr2 = input(true, title="Show Crosses up/down Chikou Span and Cloud ?")
+
+tenkanPeriods2 = 26
+kijunPeriods2 = 65
+SenkouSpanBPeriods2 = 129
+displacement2 = 33
+
+donchian(len) =>
+    avg(lowest(len), highest(len))
+
+//--------------------  ICHIMOKU   ------------------------------------------------//
+Tenkansen = donchian(tenkanPeriods)
+Kijunsen = donchian(kijunPeriods)
+SenkouSpanA = avg(Tenkansen, Kijunsen)
+SenkouSpanB = donchian(SenkouSpanBPeriods)
+Kyansen = donchian(kyanPeriods)
+cloud = SenkouSpanA - SenkouSpanB
+
+Tenkansen2 = donchian(tenkanPeriods2)
+Kijunsen2 = donchian(kijunPeriods2)
+SenkouSpanA2 = avg(Tenkansen2, Kijunsen2)
+SenkouSpanB2 = donchian(SenkouSpanBPeriods2)
+cloud2 = SenkouSpanA2 - SenkouSpanB2
+
+crossup = Tenkansen[1] < Kijunsen[1] and Tenkansen > Kijunsen ? 1 : 0
+crossdown = Tenkansen[1] > Kijunsen[1] and Tenkansen < Kijunsen ? 1 : 0
+abovecloud = close > SenkouSpanA[displacement] and close > SenkouSpanB[displacement] ? 1 : 0
+bellowcloud = close < SenkouSpanA[displacement] and close < SenkouSpanB[displacement] ? 1 : 0
+abovecloud2 = close > SenkouSpanA2[displacement2] and close > SenkouSpanB2[displacement2] ? 1 : 0
+bellowcloud2 = close < SenkouSpanA2[displacement2] and close < SenkouSpanB2[displacement2] ? 1 : 0
+incloud = close > SenkouSpanA[displacement] and close < SenkouSpanB[displacement] or 
+   close < SenkouSpanA[displacement] and close > SenkouSpanB[displacement] ? 1 : 0
+cupA = crossup == 1 and abovecloud == 1 ? crossup : 0
+cupB = crossup == 1 and incloud == 1 ? crossup : 0
+cupC = crossup == 1 and bellowcloud == 1 ? crossup : 0
+cdnA = crossdown == 1 and bellowcloud == 1 ? crossdown : 0
+cdnB = crossdown == 1 and incloud == 1 ? crossdown : 0
+cdnC = crossdown == 1 and abovecloud == 1 ? crossdown : 0
+
+flyupA = close[1] < SenkouSpanA[displacement * 2 + 1] and 
+   close > SenkouSpanA[displacement * 2] ? 1 : 0
+digdownA = close[1] > SenkouSpanA[displacement * 2 + 1] and 
+   close < SenkouSpanA[displacement * 2] ? 1 : 0
+flyupB = close[1] < SenkouSpanB[displacement * 2 + 1] and 
+   close > SenkouSpanB[displacement * 2] ? 1 : 0
+digdownB = close[1] > SenkouSpanB[displacement * 2 + 1] and 
+   close < SenkouSpanB[displacement * 2] ? 1 : 0
+flyA = cloud[displacement * 2 + 1] > 0 and flyupA == 1 ? 1 : 0
+flyB = cloud[displacement * 2 + 1] < 0 and flyupB == 1 ? 1 : 0
+digA = cloud[displacement * 2 + 1] < 0 and digdownA == 1 ? 1 : 0
+digB = cloud[displacement * 2 + 1] > 0 and digdownB == 1 ? 1 : 0
+
+preflyupA = close[1] < SenkouSpanA[displacement + 1] and close > SenkouSpanA[displacement] ? 
+   1 : 0
+predigdownA = close[1] > SenkouSpanA[displacement + 1] and close < SenkouSpanA[displacement] ? 
+   1 : 0
+preflyupB = close[1] < SenkouSpanB[displacement + 1] and close > SenkouSpanB[displacement] ? 
+   1 : 0
+predigdownB = close[1] > SenkouSpanB[displacement + 1] and close < SenkouSpanB[displacement] ? 
+   1 : 0
+preflyA = cloud[displacement] > 0 and preflyupA == 1 ? 1 : 0
+preflyB = cloud[displacement] < 0 and preflyupB == 1 ? 1 : 0
+predigA = cloud[displacement] < 0 and predigdownA == 1 ? 1 : 0
+predigB = cloud[displacement] > 0 and predigdownB == 1 ? 1 : 0
+
+//--------------------------------------------- ICHIMOKU LINE, CLOUD AND SIGNAL ------------------------------//
+plot(ichi ? Tenkansen : na, color=#0496ffff, title="Tenkan-sen")
+
+Upcloud = plot(ichi ? SenkouSpanA : na, offset=displacement, color=color.green, transp=50, title="Senkou Span A")
+Downcloud = plot(ichi ? SenkouSpanB : na, offset=displacement, color=color.red, transp=50, title="Senkou Span B")
+fill(Upcloud, Downcloud, title="Cloud", color=SenkouSpanA > SenkouSpanB ? color.green : color.red)
+ichibuy = SenkouSpanA > SenkouSpanB
+
+Upcloud2 = plot(ichi2 ? SenkouSpanA2 : na, offset=displacement2, color=color.green, transp=50, title="Senkou Span A")
+Downcloud2 = plot(ichi2 ? SenkouSpanB2 : na, offset=displacement2, color=color.red, transp=50, title="Senkou Span B")
+fill(Upcloud2, Downcloud2, title="Cloud adjust and double", color=SenkouSpanA2 > SenkouSpanB2 ? color.green : color.red)
+
+plotshape(cr1 and cupA ? cupA : na, title="Tenkan and Kijun cross up strong", style=shape.triangleup, color=#008000FF, location=location.belowbar, text='UP-T')
+plotshape(cr1 and cupB ? cupB : na, title="Tenkan and Kijun cross up average", style=shape.triangleup, color=#008000FF, location=location.belowbar, text='UP-N')
+plotshape(cr1 and cupC ? cupC : na, title="Tenkan and Kijun cross up weak", style=shape.triangleup, color=#008000FF, location=location.belowbar, text='UP-W')
+
+plotshape(cr1 and cdnA ? cdnA : na, title="Tenkan and Kijun cross down strong", style=shape.triangledown, color=#FF0000FF, location=location.abovebar, text='DN-T')
+plotshape(cr1 and cdnB ? cdnB : na, title="Tenkan and Kijun cross down average", style=shape.triangledown, color=#FF0000FF, location=location.abovebar, text='DN-N')
+plotshape(cr1 and cdnC ? cdnC : na, title="Tenkan and Kijun cross down weak", style=shape.triangledown, color=#FF0000FF, location=location.abovebar, text='DN-W')
+
+plotshape(cr2 and preflyA ? preflyA : na, title="Close and Senkou A cross up", style=shape.triangleup, color=#008000FF, location=location.belowbar, text='Up\n')
+plotshape(cr2 and preflyB ? preflyB : na, title="Close and Senkou B cross up", style=shape.triangleup, color=#008000FF, location=location.belowbar, text='Up\n')
+
+plotshape(cr2 and predigA ? predigA : na, title="Close and Senkou A cross down", style=shape.triangledown, color=#FF0000FF, location=location.abovebar, text='Down\n')
+plotshape(cr2 and predigB ? predigB : na, title="Close and Senkou B cross down", style=shape.triangledown, color=#FF0000FF, location=location.abovebar, text='Down\n')
+
+plotshape(cr2 and flyA ? flyA : na, title="Chikou and Senkou A cross up", style=shape.triangleup, color=#008000FF, location=location.belowbar, text='Fly')
+plotshape(cr2 and flyB ? flyB : na, title="Chikou and Senkou B cross up", style=shape.triangleup, color=#008000FF, location=location.belowbar, text='Fly')
+
+plotshape(cr2 and digA ? digA : na, title="Chikou and Senkou A cross down", style=shape.triangledown, color=#FF0000FF, location=location.abovebar, text='Dig')
+plotshape(cr2 and digB ? digB : na, title="Chikou and Senkou B cross down", style=shape.triangledown, color=#FF0000FF, location=location.abovebar, text='Dig')
+
+// *****************************************
+// SAR
+SARout = sar(0.02, 0.02, 0.07)
+plot(SARout, "ParabolicSAR", style=plot.style_cross, color=#3A6CA8)
+// *****************************************
+
+// *****************************************
+// TREND CONTINUATION FACTOR
+
+plusChange(src) =>
+    change_1 = change(src)
+    change(src) > 0 ? change_1 : 0.0
+minusChange(src) =>
+    change_1 = change(src)
+    change(src) > 0 ? 0.0 : -change_1
+
+plusCF = 0.0
+plusChange__1 = plusChange(src)
+plusCF := plusChange(src) == 0 ? 0.0 : plusChange__1 + nz(plusCF[1])
+
+minusCF = 0.0
+minusChange__1 = minusChange(src)
+minusCF := minusChange(src) == 0 ? 0.0 : minusChange__1 + nz(minusCF[1])
+
+plusTCF = sum(plusChange(src) - minusCF, length)
+minusTCF = sum(minusChange(src) - plusCF, length)
+// *****************************************
+//Signals
+
+above = 0
+if (cloud2 > 0) and abovecloud2
+    above := 1
+
+below = 0
+if (cloud2 < 0) and bellowcloud2
+    below := 1
+	
+BearishPattern = 0
+for i = (bar_index - 1) to bar_index
+	if (estarP or sstarP or hammerP or bearHP or bearEP or dccP)
+		BearishPattern := 1
+		
+BullishPattern = 0
+for i = (bar_index - 1) to bar_index
+	if (mstarP or bullHP or bullEP)
+		BullishPattern := 1		
+
+
+Buy = (((crossover(line1, line2) and crossover(k,d)) or (line1[1] < line2[1] and line1 > line2 and k > d)) and (SARout < open) and (BullishPattern == 1)) or (crossover(line3, line4) and SARout < open) or (crossover(plusTCF, minusTCF) and (open > SARout) and (above == 1))
+Sell = (((crossover(line2, line1) and crossover(d,k)) or (line1[1] > line2[2] and line1 < line2 and d > k)) and (SARout > open) and (BearishPattern == 1)) or ((crossover(line4, line3)) and (open < SARout)) or (crossover(minusTCF, plusTCF) and (open < SARout) and (below == 1))
+if Buy
+	label1 = label.new(bar_index, high, text="Long Position", style=label.style_labeldown, color=#0CCD00 )
+if Sell
+	label2 = label.new(bar_index, low, text="Short Position", style=label.style_labelup, color=#FF0000 )
+	label.set_textcolor(label2, textcolor=color.white)
+alertcondition(Buy or Sell, title='Signal', message='Signal')
